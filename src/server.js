@@ -652,14 +652,14 @@ function metricsText() {
   const s = lastSnapshot;
   const out = [];
   const block = (name, help, type, lines) => { out.push(`# HELP ${name} ${help}`, `# TYPE ${name} ${type}`, ...lines); };
-  block("caddy_panel_up", "Panel process up", "gauge", ["caddy_panel_up 1"]);
-  block("caddy_panel_last_snapshot_timestamp_seconds", "Last snapshot unix time", "gauge", [`caddy_panel_last_snapshot_timestamp_seconds ${Math.floor(s.time / 1000)}`]);
-  block("caddy_panel_node_reachable", "SSH reachable (1/0)", "gauge", s.nodes.map((n) => `caddy_panel_node_reachable{node="${n.name}",role="${n.role}"} ${n.reachable ? 1 : 0}`));
-  block("caddy_panel_container_up", "caddy-ha container running (1/0)", "gauge", s.nodes.map((n) => `caddy_panel_container_up{node="${n.name}",role="${n.role}"} ${n.container && n.container.ok ? 1 : 0}`));
-  block("caddy_panel_cert_days_left", "Wildcard cert days remaining", "gauge", s.nodes.filter((n) => n.certificate && typeof n.certificate.daysLeft === "number").map((n) => `caddy_panel_cert_days_left{node="${n.name}",role="${n.role}"} ${n.certificate.daysLeft}`));
-  if (s.consistent !== null) block("caddy_panel_config_consistent", "Primary/backup managed config consistent (1/0)", "gauge", [`caddy_panel_config_consistent ${s.consistent ? 1 : 0}`]);
-  block("caddy_panel_service_total", "Total services", "gauge", [`caddy_panel_service_total ${s.total}`]);
-  block("caddy_panel_service_managed", "Panel-managed services", "gauge", [`caddy_panel_service_managed ${s.managed}`]);
+  block("wicket_up", "Panel process up", "gauge", ["wicket_up 1"]);
+  block("wicket_last_snapshot_timestamp_seconds", "Last snapshot unix time", "gauge", [`wicket_last_snapshot_timestamp_seconds ${Math.floor(s.time / 1000)}`]);
+  block("wicket_node_reachable", "SSH reachable (1/0)", "gauge", s.nodes.map((n) => `wicket_node_reachable{node="${n.name}",role="${n.role}"} ${n.reachable ? 1 : 0}`));
+  block("wicket_container_up", "caddy-ha container running (1/0)", "gauge", s.nodes.map((n) => `wicket_container_up{node="${n.name}",role="${n.role}"} ${n.container && n.container.ok ? 1 : 0}`));
+  block("wicket_cert_days_left", "Wildcard cert days remaining", "gauge", s.nodes.filter((n) => n.certificate && typeof n.certificate.daysLeft === "number").map((n) => `wicket_cert_days_left{node="${n.name}",role="${n.role}"} ${n.certificate.daysLeft}`));
+  if (s.consistent !== null) block("wicket_config_consistent", "Primary/backup managed config consistent (1/0)", "gauge", [`wicket_config_consistent ${s.consistent ? 1 : 0}`]);
+  block("wicket_service_total", "Total services", "gauge", [`wicket_service_total ${s.total}`]);
+  block("wicket_service_managed", "Panel-managed services", "gauge", [`wicket_service_managed ${s.managed}`]);
   return out.join("\n") + "\n";
 }
 

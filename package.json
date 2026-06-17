@@ -26,11 +26,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/<your-github-username>/wicket.git"
+    "url": "git+https://github.com/sooua/wicket.git"
   },
-  "homepage": "https://github.com/<your-github-username>/wicket#readme",
+  "homepage": "https://github.com/sooua/wicket#readme",
   "bugs": {
-    "url": "https://github.com/<your-github-username>/wicket/issues"
+    "url": "https://github.com/sooua/wicket/issues"
   },
   "dependencies": {
     "dotenv": "^17.4.2",
