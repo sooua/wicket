@@ -1,0 +1,41 @@
+{
+  "name": "wicket",
+  "version": "1.0.0",
+  "description": "A small self-hosted console for managing internal HTTPS reverse proxies and wildcard TLS on a highly-available Caddy pair.",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node src/server.js"
+  },
+  "keywords": [
+    "caddy",
+    "reverse-proxy",
+    "tls",
+    "wildcard-certificate",
+    "homelab",
+    "self-hosted",
+    "dashboard",
+    "high-availability",
+    "prometheus"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/<your-github-username>/wicket.git"
+  },
+  "homepage": "https://github.com/<your-github-username>/wicket#readme",
+  "bugs": {
+    "url": "https://github.com/<your-github-username>/wicket/issues"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "ssh2": "^1.17.0",
+    "zod": "^4.4.3"
+  }
+}

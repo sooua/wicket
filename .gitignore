@@ -1,0 +1,16 @@
+# 依赖
+node_modules/
+
+# 机密：不要提交任何凭据
+.env
+.env.*.local
+
+# 运行时数据（服务列表、操作日志）
+data/*.json
+
+# 日志与临时文件
+*.log
+.server.pid
+
+# 开发期截图（仅忽略仓库根目录的 png，保留 docs/ 下的文档图片）
+/*.png
