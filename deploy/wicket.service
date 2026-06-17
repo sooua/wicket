@@ -1,0 +1,24 @@
+[Unit]
+Description=Wicket — homelab Caddy reverse-proxy & TLS console
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# 假设代码放在 /opt/wicket，已 npm ci --omit=dev
+WorkingDirectory=/opt/wicket
+ExecStart=/usr/bin/node src/server.js
+EnvironmentFile=/opt/wicket/.env
+Restart=on-failure
+RestartSec=5
+User=wicket
+Group=wicket
+
+# 安全加固
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

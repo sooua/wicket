@@ -1,0 +1,17 @@
+services:
+  wicket:
+    build: .
+    container_name: wicket
+    restart: unless-stopped
+    # 从 .env 读取域名后缀、主备 SSH 凭据、告警配置等
+    env_file: .env
+    environment:
+      # 容器内必须监听 0.0.0.0，否则宿主端口映射不进来
+      - BIND_HOST=0.0.0.0
+      - PORT=8181
+    ports:
+      # 默认仅宿主本机可访问；要让 LAN / Prometheus 访问，改成 "8181:8181" 并务必设置 PANEL_TOKEN
+      - "127.0.0.1:8181:8181"
+    volumes:
+      # 持久化操作日志与服务记录
+      - ./data:/app/data

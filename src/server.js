@@ -262,6 +262,11 @@ async function mapLimit(items, limit, fn) {
 
 /* ============ 接口 ============ */
 
+// 健康检查（无需令牌，不含任何敏感信息），供容器 / 反代探活
+app.get("/healthz", (req, res) => {
+  res.json({ ok: true, uptime: Math.round(process.uptime()) });
+});
+
 app.get("/api/config", (req, res) => {
   res.json({
     suffix: config.suffix,

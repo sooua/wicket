@@ -57,6 +57,50 @@ npm start
 
 > 凭据只存在服务端 `.env`（已被 `.gitignore` 排除），界面与所有接口都不展示密码 / Cloudflare Token。
 
+## 🐳 部署
+
+Wicket 是常驻服务，需要持久磁盘 + 能 SSH 到你的 Caddy 主机，**不适用于 Serverless（Vercel 等）**。建议跑在内网一台 7×24 的机器上（NAS 的 Docker、小型 Linux、或本机）。
+
+### 方式一：Docker Compose（推荐）
+
+```bash
+cp .env.example .env   # 填好域名后缀与主备 SSH 凭据
+docker compose up -d
+docker compose logs -f
+```
+
+默认只把端口发布到宿主本机（`127.0.0.1:8181`）。若要让 LAN / Prometheus 访问，把 `docker-compose.yml` 的端口映射改为 `"8181:8181"`，并在 `.env` 设置 `PANEL_TOKEN`。`data/` 已挂载卷持久化操作日志。
+
+### 方式二：systemd（Linux 常驻）
+
+```bash
+sudo useradd -r -s /usr/sbin/nologin wicket
+sudo mkdir -p /opt/wicket && sudo cp -r . /opt/wicket && cd /opt/wicket
+sudo -u wicket npm ci --omit=dev
+sudo cp deploy/wicket.service /etc/systemd/system/
+sudo chown -R wicket:wicket /opt/wicket
+sudo systemctl enable --now wicket
+sudo journalctl -u wicket -f
+```
+
+### 方式三：Windows 常驻
+
+用 [NSSM](https://nssm.cc/) 注册为服务：
+
+```powershell
+nssm install Wicket "C:\Program Files\nodejs\node.exe" "E:\path\to\wicket\src\server.js"
+nssm set Wicket AppDirectory "E:\path\to\wicket"
+nssm start Wicket
+```
+
+或用 PM2：`npm i -g pm2 && pm2 start src/server.js --name wicket && pm2 save && pm2 startup`。
+
+### 部署后检查
+
+- `curl http://127.0.0.1:8181/healthz` → `{"ok":true,...}`
+- 给 `.env` 设最小权限（如 `chmod 600 .env`），它含 SSH 密码。
+- 跨机访问务必设 `PANEL_TOKEN`；可把面板自身也反代成 `wicket.<你的后缀>` 走通配符证书。
+
 ## 🌐 新增服务（写入流程）
 
 先点「预览变更」查看将写入的配置块与脱敏 diff，确认后「部署」会：
