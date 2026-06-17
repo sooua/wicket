@@ -82,9 +82,16 @@ async function readRemoteFile(node, path) {
 }
 
 async function writeRemoteFile(node, path, content) {
+  // 重要：不要把文件内容直接管道进 sudo。sudo() 里 `printf %s '<密码>' | sudo -S`
+  // 会占用同一条 stdin，密码那段 printf 会吞掉内容流，导致目标文件被写成 0 字节。
+  // 正确做法：先用普通用户把内容写到临时文件（独占的内容管道），再用 sudo `cat tmp > path`
+  // （sudo 的 stdin 只承载密码，cat 从文件读内容，互不干扰）。
   const encoded = Buffer.from(content, "utf8").toString("base64");
-  const command = `printf %s ${shellQuote(encoded)} | base64 -d | ${sudo(node, `tee ${shellQuote(path)} >/dev/null`)}`;
-  const result = await runSsh(node, command, { timeoutMs: 30000 });
+  const tmp = `/tmp/wicket-write-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const writeTemp = `printf %s ${shellQuote(encoded)} | base64 -d > ${shellQuote(tmp)}`;
+  const install = sudo(node, `cat ${shellQuote(tmp)} > ${shellQuote(path)}`);
+  const cleanup = `status=$?; rm -f ${shellQuote(tmp)}; exit $status`;
+  const result = await runSsh(node, `${writeTemp} && ${install}; ${cleanup}`, { timeoutMs: 30000 });
   if (result.code !== 0) {
     throw new Error(`${node.name}: failed to write ${path}: ${result.stderr || result.stdout}`);
   }
