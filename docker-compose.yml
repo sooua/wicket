@@ -1,5 +1,7 @@
 services:
   wicket:
+    # 本地构建；或注释掉 build、改用预构建镜像：
+    # image: ghcr.io/sooua/wicket:latest
     build: .
     container_name: wicket
     restart: unless-stopped

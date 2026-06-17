@@ -71,6 +71,14 @@ docker compose logs -f
 
 默认只把端口发布到宿主本机（`127.0.0.1:8181`）。若要让 LAN / Prometheus 访问，把 `docker-compose.yml` 的端口映射改为 `"8181:8181"`，并在 `.env` 设置 `PANEL_TOKEN`。`data/` 已挂载卷持久化操作日志。
 
+**用预构建镜像（免本地构建）**：推一个版本 tag 后，GitHub Actions 会构建多架构镜像（amd64 + arm64）发布到 `ghcr.io/sooua/wicket`：
+
+```bash
+git tag v1.0.0 && git push origin v1.0.0
+```
+
+然后把 `docker-compose.yml` 里的 `build: .` 换成 `image: ghcr.io/sooua/wicket:latest`，`docker compose pull && docker compose up -d` 即可。镜像默认随仓库可见性；私有时拉取需先 `docker login ghcr.io`。
+
 ### 方式二：systemd（Linux 常驻）
 
 ```bash
