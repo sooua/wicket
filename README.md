@@ -6,9 +6,10 @@
 
 内网 HTTPS 反向代理与通配符证书的自托管运维控制台——通过 SSH 管理一对主备 Caddy。
 
-![license](https://img.shields.io/badge/license-MIT-blue)
+[![release](https://github.com/sooua/wicket/actions/workflows/release.yml/badge.svg)](https://github.com/sooua/wicket/actions/workflows/release.yml)
+[![ghcr image](https://img.shields.io/github/v/tag/sooua/wicket?sort=semver&label=ghcr.io%2Fsooua%2Fwicket&logo=docker&logoColor=white&color=2496ed)](https://github.com/sooua/wicket/pkgs/container/wicket)
+![license](https://img.shields.io/github/license/sooua/wicket?color=blue)
 ![node](https://img.shields.io/badge/node-%E2%89%A518-brightgreen)
-![status](https://img.shields.io/badge/status-self--hosted-orange)
 
 </div>
 
