@@ -110,6 +110,17 @@ nssm start Wicket
 - 给 `.env` 设最小权限（如 `chmod 600 .env`），它含 SSH 密码。
 - 跨机访问务必设 `PANEL_TOKEN`；可把面板自身也反代成 `wicket.<你的后缀>` 走通配符证书。
 
+### 升级
+
+```bash
+cd /path/to/wicket && git pull        # 本地构建方式
+docker compose up -d --build
+# 或预构建镜像方式：
+docker compose pull && docker compose up -d --force-recreate
+```
+
+> **⚠️ v1.0.1 重要修复**：修复了 `writeRemoteFile` 把远程文件写成 0 字节的严重 bug（`sudo -S` 的密码流会吞掉文件内容流，导致 Caddyfile 被截断）。**v1.0.0 的写操作（部署/删除/回滚/对齐）会损坏 Caddyfile，请务必升级到 ≥ v1.0.1。** 若你曾用只读挂载临时打补丁（`- ./patches/ssh.js:/app/src/ssh.js:ro`），升级到 v1.0.1 后请从 `docker-compose.yml` 删除该行并 `--force-recreate`，补丁已并入正式镜像。
+
 ## 🌐 新增服务（写入流程）
 
 先点「预览变更」查看将写入的配置块与脱敏 diff，确认后「部署」会：
