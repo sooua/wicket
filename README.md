@@ -189,6 +189,22 @@ Grafana 告警规则示例（触发后走 Grafana 联系点通知）：
 
 Node.js · Express · ssh2 · zod · 原生 HTML/CSS/JS（无构建步骤）。
 
+## 🏷️ 发版
+
+变更记录见 [CHANGELOG.md](./CHANGELOG.md)。发版用脚本一键完成（打 tag → 推送触发镜像构建 → 创建 GitHub Release，说明取自 CHANGELOG 对应小节）：
+
+```bash
+# 1. 在 CHANGELOG.md 新增 ## [X.Y.Z] - YYYY-MM-DD 小节并提交
+# 2. 一键发版（需已登录 gh CLI）
+./scripts/release.sh X.Y.Z
+```
+
+脚本会校验：在 `main` 分支、工作区干净、tag 不存在、CHANGELOG 含该版本小节。手动发版与 Release 说明模板见 [.github/RELEASE_TEMPLATE.md](./.github/RELEASE_TEMPLATE.md)。
+
+## 🤝 贡献
+
+参与开发请看 [CONTRIBUTING.md](./CONTRIBUTING.md)，尤其是其中关于 SSH 写入原语与凭据脱敏的安全约定。
+
 ## 📄 License
 
 [MIT](./LICENSE)
