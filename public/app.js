@@ -73,19 +73,55 @@ const TOKEN_KEY = "panel_token";
 function getToken() { try { return localStorage.getItem(TOKEN_KEY) || ""; } catch { return ""; } }
 function setToken(t) { try { t ? localStorage.setItem(TOKEN_KEY, t) : localStorage.removeItem(TOKEN_KEY); } catch { /* ignore */ } }
 
-async function api(path, options = {}, retried = false) {
-  const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
-  const tok = getToken();
-  if (tok) headers["x-panel-token"] = tok;
-  const res = await fetch(path, { ...options, headers });
-  if (res.status === 401 && !retried) {
-    const t = window.prompt("此面板已启用访问令牌（PANEL_TOKEN），请输入：", getToken());
-    if (t) { setToken(t.trim()); return api(path, options, true); }
-    throw new Error("未授权：需要访问令牌");
+// 登录态：401 时弹出全屏登录页，提交后重试；多个并发请求共用同一个登录 Promise
+let loginState = { promise: null, resolve: null };
+function requestToken(showError) {
+  showLogin(showError);
+  if (!loginState.promise) loginState.promise = new Promise((res) => { loginState.resolve = res; });
+  return loginState.promise;
+}
+function showLogin(showError) {
+  const scrim = $("#loginScrim");
+  if (!scrim) return;
+  scrim.hidden = false;
+  const err = $("#loginError");
+  if (err) { err.hidden = !showError; err.textContent = "令牌无效或已失效，请重新输入"; }
+  const btn = $("#loginBtn");
+  if (btn) { btn.disabled = false; btn.textContent = "进入控制台"; }
+  setTimeout(() => $("#loginToken")?.focus(), 50);
+}
+function hideLogin() { const s = $("#loginScrim"); if (s && !s.hidden) s.hidden = true; }
+function submitLogin() {
+  const input = $("#loginToken");
+  const err = $("#loginError");
+  const value = input.value.trim();
+  if (!value) { if (err) { err.hidden = false; err.textContent = "请输入访问令牌"; } return; }
+  setToken(value);
+  const btn = $("#loginBtn");
+  if (btn) { btn.disabled = true; btn.textContent = "验证中…"; }
+  const resolve = loginState.resolve;
+  loginState = { promise: null, resolve: null };
+  if (resolve) resolve(value);
+}
+
+async function api(path, options = {}) {
+  let triedToken = false;
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
+    const tok = getToken();
+    if (tok) headers["x-panel-token"] = tok;
+    const res = await fetch(path, { ...options, headers });
+    if (res.status === 401) {
+      await requestToken(triedToken); // 首次不报错；重试后仍 401 则提示令牌无效
+      triedToken = true;
+      continue;
+    }
+    hideLogin();
+    const data = await res.json().catch(() => ({ ok: false, error: "响应解析失败" }));
+    if (!res.ok || data.ok === false) throw new Error(data.error || `请求失败 (${res.status})`);
+    return data;
   }
-  const data = await res.json().catch(() => ({ ok: false, error: "响应解析失败" }));
-  if (!res.ok || data.ok === false) throw new Error(data.error || `请求失败 (${res.status})`);
-  return data;
 }
 
 function fmtTime(iso) {
@@ -193,6 +229,7 @@ function pageContentHtml() {
         <div class="panel">
           <div class="panel-head"><h2>设置</h2><span class="panel-hint">只读信息，敏感凭据（密码 / Cloudflare Token）不在界面展示</span></div>
           <div class="settings-grid" id="settingsGrid"><div class="placeholder">读取中…</div></div>
+          <div class="settings-actions" id="settingsActions"></div>
         </div>
       </section>`;
     default: return `
@@ -277,8 +314,27 @@ function renderShell() {
     </div>`;
 
   const extra = document.createElement("div");
-  extra.innerHTML = `${PAGE === "routes" ? drawerHtml() : ""}${modalHtml()}<div class="toast" id="toast" hidden></div>`;
+  extra.innerHTML = `${PAGE === "routes" ? drawerHtml() : ""}${modalHtml()}${loginHtml()}<div class="toast" id="toast" hidden></div>`;
   document.body.appendChild(extra);
+}
+
+function loginHtml() {
+  return `
+    <div class="login-scrim" id="loginScrim" hidden>
+      <form class="login-card" id="loginForm" autocomplete="off">
+        <div class="login-brand">
+          <div class="brand-mark">W</div>
+          <div><div class="login-title">Wicket</div><div class="login-sub">内网 Caddy 控制台</div></div>
+        </div>
+        <div class="login-field">
+          <label for="loginToken">访问令牌</label>
+          <input type="password" id="loginToken" placeholder="请输入 PANEL_TOKEN" autocomplete="current-password" />
+        </div>
+        <div class="login-error" id="loginError" hidden></div>
+        <button type="submit" class="btn btn-primary login-btn" id="loginBtn">进入控制台</button>
+        <div class="login-hint">令牌由服务端 .env 的 PANEL_TOKEN 设定 · 验证通过后保存在本浏览器</div>
+      </form>
+    </div>`;
 }
 
 let modalCopyText = "";
@@ -444,6 +500,8 @@ function renderSettings() {
     ["凭据", "存于服务端 .env，界面不展示密码 / Cloudflare Token"],
   ];
   box.innerHTML = rows.map(([k, v]) => `<div class="set-row"><span class="k">${escapeHtml(k)}</span><span class="v" title="${escapeHtml(v)}">${escapeHtml(v)}</span></div>`).join("");
+  const acts = $("#settingsActions");
+  if (acts) acts.innerHTML = ig.authEnabled ? `<button class="btn btn-ghost" id="logoutBtn">退出登录（清除本机令牌）</button>` : "";
 }
 
 /* 路由表 */
@@ -664,6 +722,12 @@ function bindEvents() {
   $("#closeDrawer")?.addEventListener("click", closeDrawer);
   $("#drawerScrim")?.addEventListener("click", closeDrawer);
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeDrawer(); closeModal(); } });
+
+  /* 登录 / 退出 */
+  $("#loginForm")?.addEventListener("submit", (e) => { e.preventDefault(); submitLogin(); });
+  document.addEventListener("click", (e) => {
+    if (e.target.closest("#logoutBtn")) { setToken(""); location.reload(); }
+  });
 
   /* 结果弹窗 */
   $("#modalClose")?.addEventListener("click", closeModal);

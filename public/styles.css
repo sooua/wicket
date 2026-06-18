@@ -359,6 +359,36 @@ input::placeholder { color: var(--text-3); }
 .hc-table tbody tr:last-child td { border-bottom: none; }
 .cmd-block { margin: 0; padding: 14px 16px; background: var(--deep-dark); color: var(--on-dark-2); border-radius: var(--radius); font-family: var(--mono); font-size: 12.5px; white-space: pre-wrap; word-break: break-word; line-height: 1.7; }
 
+/* ===== 登录页 ===== */
+.login-scrim {
+  position: fixed; inset: 0; z-index: 100;
+  background: var(--parchment);
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+}
+.login-scrim[hidden] { display: none; }
+.login-card {
+  width: 372px; max-width: 100%;
+  background: var(--ivory); border: 1px solid var(--border-2); border-radius: var(--radius-lg);
+  box-shadow: var(--whisper); padding: 30px;
+  display: flex; flex-direction: column; gap: 18px;
+  animation: pop .18s ease-out;
+}
+.login-brand { display: flex; align-items: center; gap: 13px; }
+.login-brand .brand-mark { width: 44px; height: 44px; font-size: 18px; border-radius: var(--radius); }
+.login-title { font-family: var(--serif); font-size: 24px; font-weight: 500; line-height: 1.1; }
+.login-sub { color: var(--text-3); font-size: 12px; margin-top: 2px; }
+.login-field { display: flex; flex-direction: column; gap: 7px; }
+.login-field label { font-size: 13px; color: var(--text-2); font-weight: 500; }
+.login-field input { font-size: 15px; padding: 11px 13px; }
+.login-error { color: var(--bad); font-size: 13px; background: var(--bad-bg); box-shadow: 0 0 0 1px #ecd2cc; border-radius: var(--radius-sm); padding: 9px 12px; }
+.login-error[hidden] { display: none; }
+.login-btn { width: 100%; padding: 11px; font-size: 15px; }
+.login-hint { color: var(--text-3); font-size: 11px; text-align: center; line-height: 1.6; }
+
+/* 设置页操作区 */
+.settings-actions { padding: 0 20px 20px; }
+.settings-actions:empty { padding: 0; }
+
 /* ===== 弹窗 ===== */
 .modal-scrim { position: fixed; inset: 0; background: rgba(20,20,19,.32); z-index: 70; display: flex; align-items: center; justify-content: center; padding: 24px; animation: fade .15s; }
 .modal-scrim[hidden] { display: none; }
